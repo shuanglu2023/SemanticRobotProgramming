@@ -1,0 +1,158 @@
+// Database Schema
+digraph {
+	Actions [label="Actions
+ActionId
+ActionName
+TargetObjectId"]
+	Products [label="Products
+ObjectId
+ObjectName
+SourceLocationId
+TargetLocationId
+Color
+TokenId
+SentenceId"]
+	SourceLocations [label="SourceLocations
+LocationId
+TrajectorObjectId
+Description"]
+	TargetLocations [label="TargetLocations
+LocationId
+IndicatorObjectId
+Description"]
+	TaskModelTargetObjects [label="TaskModelTargetObjects
+TaskModelId
+TargetObjectId"]
+	HandPositions [label="HandPositions
+TimeId
+TaskModelId
+X
+Y
+Z"]
+	sqlite_sequence [label="sqlite_sequence
+name
+seq"]
+	GroundedProducts [label="GroundedProducts
+ClassId
+ObjectName
+SourceLocationId
+TargetLocationId
+Color"]
+	ProductPositionsgraybox [label="ProductPositionsgraybox
+TimeId
+TaskModelId
+ProductId
+SourceLocationId
+TargetLocationId
+X
+Y
+Z
+Rx
+Ry
+Rz
+Grasp
+Release"]
+	ProductPositionsbluebox [label="ProductPositionsbluebox
+TimeId
+TaskModelId
+ProductId
+SourceLocationId
+TargetLocationId
+X
+Y
+Z
+Rx
+Ry
+Rz
+Grasp
+Release"]
+	ProductPositionsparallelogram [label="ProductPositionsparallelogram
+TimeId
+TaskModelId
+ProductId
+SourceLocationId
+TargetLocationId
+X
+Y
+Z
+Rx
+Ry
+Rz
+Grasp
+Release"]
+	ProductPositionscuboid [label="ProductPositionscuboid
+TimeId
+TaskModelId
+ProductId
+SourceLocationId
+TargetLocationId
+X
+Y
+Z
+Rx
+Ry
+Rz
+Grasp
+Release"]
+	ProductPositionsoctagon [label="ProductPositionsoctagon
+TimeId
+TaskModelId
+ProductId
+SourceLocationId
+TargetLocationId
+X
+Y
+Z
+Rx
+Ry
+Rz
+Grasp
+Release"]
+	ProductPositionsstar [label="ProductPositionsstar
+TimeId
+TaskModelId
+ProductId
+SourceLocationId
+TargetLocationId
+X
+Y
+Z
+Rx
+Ry
+Rz
+Grasp
+Release"]
+	Actions -> Products [label=TargetObjectId]
+	Products -> TargetLocations [label=TargetLocationId]
+	Products -> SourceLocations [label=SourceLocationId]
+	SourceLocations -> Products [label=TrajectorObjectId]
+	TargetLocations -> Products [label=IndicatorObjectId]
+	TaskModelTargetObjects -> Products [label=TargetObjectId]
+	TaskModelTargetObjects -> TaskModels [label=TaskModelId]
+	GroundedProducts -> TargetLocations [label=TargetLocationId]
+	GroundedProducts -> SourceLocations [label=SourceLocationId]
+	ProductPositionsgraybox -> TargetLocations [label=TargetLocationId]
+	ProductPositionsgraybox -> SourceLocations [label=SourceLocationId]
+	ProductPositionsgraybox -> TaskModels [label=TaskModelId]
+	ProductPositionsgraybox -> Products [label=ProductId]
+	ProductPositionsbluebox -> TargetLocations [label=TargetLocationId]
+	ProductPositionsbluebox -> SourceLocations [label=SourceLocationId]
+	ProductPositionsbluebox -> TaskModels [label=TaskModelId]
+	ProductPositionsbluebox -> Products [label=ProductId]
+	ProductPositionsparallelogram -> TargetLocations [label=TargetLocationId]
+	ProductPositionsparallelogram -> SourceLocations [label=SourceLocationId]
+	ProductPositionsparallelogram -> TaskModels [label=TaskModelId]
+	ProductPositionsparallelogram -> Products [label=ProductId]
+	ProductPositionscuboid -> TargetLocations [label=TargetLocationId]
+	ProductPositionscuboid -> SourceLocations [label=SourceLocationId]
+	ProductPositionscuboid -> TaskModels [label=TaskModelId]
+	ProductPositionscuboid -> Products [label=ProductId]
+	ProductPositionsoctagon -> TargetLocations [label=TargetLocationId]
+	ProductPositionsoctagon -> SourceLocations [label=SourceLocationId]
+	ProductPositionsoctagon -> TaskModels [label=TaskModelId]
+	ProductPositionsoctagon -> Products [label=ProductId]
+	ProductPositionsstar -> TargetLocations [label=TargetLocationId]
+	ProductPositionsstar -> SourceLocations [label=SourceLocationId]
+	ProductPositionsstar -> TaskModels [label=TaskModelId]
+	ProductPositionsstar -> Products [label=ProductId]
+}

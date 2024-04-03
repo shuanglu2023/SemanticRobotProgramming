@@ -1,0 +1,9 @@
+.sem_env/
+language_module/__pycache__/
+db/__pycache__/
+models/
+task_module/__pycache__/
+data/
+env_module/__pycache__/
+env_module/hand_detector.d2/
+language_module/spert/
