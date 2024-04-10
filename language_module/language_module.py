@@ -88,7 +88,6 @@ class LangugageModule:
 
     def dep_parser(self, product_id, source_location_id, target_location_id, sentence_id, tokens,actions,colors,spatial_relations,move_relations):
         nlp = spacy.load("en_core_web_sm")
-
         sentence = token2sent(tokens)
         print('------------------------------------------------------------------------')
         print(f'{sentence}')
@@ -167,20 +166,17 @@ class LangugageModule:
                                         target_location_id += 1
                                         product_id+=1
 
-        # results = product_dao.get_products_by_sentence_id(sentence_id)
 
-        # for result in products:
-        #     # product = Product(result[0], result[1], result[-3], result[-2])
-        #     token = doc[product.token_id]
-        #     for child in token.children:
-        #         for color in colors:
-        #             if child.text in color:   
-        #                 # product_dao.update_product_color(product.object_id,child.text)
-        #                 product.set_color(product.object_id,child.text)
+        for product in products:
+            token = doc[product.token_id]
+            for child in token.children:
+                for color in colors:
+                    if child.text in color:   
+                        product.set_color(child.text)
     
         return product_id, source_location_id, target_location_id, products, task_model, source_locations, target_locations
 
-    def read_classfication_results(self,sentence_id,x):       
+    def read_classfication_results(self,x):       
         # read predictions.json into memory and process it
 
         tokens = x['tokens']
@@ -262,7 +258,7 @@ class LangugageModule:
         for i in range(len(predict_json)):
             sentence_id = i
             x = predict_json[i]
-            tokens, actions, colors, spatial_relations, move_relations = self.read_classfication_results(sentence_id,x)
+            tokens, actions, colors, spatial_relations, move_relations = self.read_classfication_results(x)
             product_id, source_location_id, target_location_id, products, task_model, source_locations, target_locations = self.dep_parser(product_id, source_location_id, target_location_id, sentence_id, tokens, actions, colors, spatial_relations, move_relations)
             for product in products:
                 # print(f'product')
@@ -280,8 +276,8 @@ class LangugageModule:
                 source_location_dao.add_source_location(source_location)
 
             for target_location in target_locations:
-                print(f'target_location')
-                print(target_location.location_id, target_location.description, target_location.object_id)
+                # print(f'target_location')
+                # print(target_location.location_id, target_location.description, target_location.object_id)
                 target_location_dao.add_target_location(target_location)
 
 
