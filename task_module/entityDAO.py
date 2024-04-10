@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Any
 from .entity import TaskModel
 
 class TaskModelDAO:
@@ -47,6 +48,14 @@ class ProductDAO:
             cursor.execute(sql, (product.object_id, product.object_name, product.token_id, product.sentence_id, getattr(product, 'source_location_id', None), getattr(product, 'target_location_id', None), getattr(product, 'color', None)))
             conn.commit()
 
+    
+    def add_class_id(self, class_id, product_id):
+        sql = "UPDATE Products SET ClassId = ? WHERE ObjectId = ?;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, (class_id, product_id))
+            conn.commit()
+            
     def get_product(self, object_id):
         sql = "SELECT * FROM Products WHERE ObjectId = ?;"
         with sqlite3.connect(self.db_path) as conn:
@@ -160,6 +169,13 @@ class ProductPositionDAO:
             cursor.execute(sql)
             return cursor.fetchall()
         
+    def get_product_positions_by_time_id(self,time_id):
+        sql = f"SELECT * FROM ProductPositions{self.product_name} WHERE TimeId = ?;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, (time_id,))
+            return cursor.fetchone()
+        
     def update_grasp_index(self,time_id):
         sql = f"UPDATE ProductPositions{self.product_name} SET Grasp = ? WHERE TimeId = ?;"
         try:
@@ -211,6 +227,20 @@ class ProductPositionDAO:
             else:
                 return None
             
+    def get_reach_indicies(self):
+        sql = f"SELECT TimeId FROM ProductPositions{self.product_name} WHERE Reach = 1;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql)
+            return cursor.fetchall()
+        
+    def get_move_indicies(self):
+        sql = f"SELECT TimeId FROM ProductPositions{self.product_name} WHERE Move = 1;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql)
+            return cursor.fetchall()
+            
     def get_release_index(self):
         sql = f"SELECT TimeId FROM ProductPositions{self.product_name} WHERE Release = 1;"
         with sqlite3.connect(self.db_path) as conn:
@@ -223,20 +253,34 @@ class ProductPositionDAO:
                 return None
             
     def get_reach_trajectory(self):
-        # Get the trajectory from the start to the grasp index
-        sql = f"SELECT X, Y, Z, Rz FROM ProductPositions{self.product_name} WHERE TimeId <= (SELECT TimeId FROM ProductPositions{self.product_name} WHERE Grasp = 1);"
+        # Get the trajectory, where reach is 1
+        sql = f"SELECT X, Y, Z, Rz FROM ProductPositions{self.product_name} WHERE Reach = 1;"
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(sql)
             return cursor.fetchall()
     
     def get_move_trajectory(self):
-        # Get the trajectory from the grasp index to the release index
-        sql = f"SELECT X, Y, Z, Rz FROM ProductPositions{self.product_name} WHERE TimeId >= (SELECT TimeId FROM ProductPositions{self.product_name} WHERE Grasp = 1) AND TimeId <= (SELECT TimeId FROM ProductPositions{self.product_name} WHERE Release = 1);"
+        # Get the trajectory, where move is 1
+        sql = f"SELECT X, Y, Z, Rz FROM ProductPositions{self.product_name} WHERE Move = 1;"
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(sql)
             return cursor.fetchall()
+
+    def update_reach_index(self, start, grasp_index):
+        sql = f"UPDATE ProductPositions{self.product_name} SET Reach = ? WHERE TimeId >= ? AND TimeId < ?;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, (1, start, grasp_index))
+            conn.commit()
+
+    def update_move_index(self, grasp_index, release_index):
+        sql = f"UPDATE ProductPositions{self.product_name} SET Move = ? WHERE TimeId > ? AND TimeId < ?;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, (1, grasp_index, release_index))
+            conn.commit()
 
 class SourceLocationDAO:
     def __init__(self, db_path):
@@ -387,6 +431,14 @@ class GroundedProductDAO:
             cursor = conn.cursor()
             cursor.execute(sql, (color, class_id))
             conn.commit()
+        
+    # get target location by product name
+    def get_target_location_by_product_name(self, product_name):
+        sql = "SELECT TargetLocationId FROM GroundedProducts WHERE ObjectName = ?;"
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, (product_name,))
+            return cursor.fetchone()
 
 class HandPositionDAO:
     def __init__(self,db_path,task_model_id):

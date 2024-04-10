@@ -140,7 +140,7 @@ class EnvModule():
         class_labels = []
         for product in products:
             product_name = product[1]
-            product_color = product[-3]
+            product_color = product[4]
             class_labels.append({'color':product_color,'name':product_name})
         # Generating a list of unique names
         unique_names = list(set(item['name'] for item in class_labels))
@@ -149,9 +149,13 @@ class EnvModule():
             for result in results:
                 product_color = result[4]
                 product_name = result[1]
+                product_id = result[0]
                 if product_color is not None:
                     product_name = product_color + product_name
-                grounded_product_dao.add_grounded_product(self.label2id[product_name],product_name)
+                try:
+                    grounded_product_dao.add_grounded_product(self.label2id[product_name],product_name)
+                except:
+                    pass
                 source_location_id = result[2]
                 target_location_id = result[3]
                 if source_location_id is not None:
@@ -159,6 +163,7 @@ class EnvModule():
                 if target_location_id is not None:
                     grounded_product_dao.update_target_location(self.label2id[product_name], target_location_id)
                 grounded_product_dao.update_color(self.label2id[product_name], product_color)
+                product_dao.add_class_id(self.label2id[product_name],product_id)
 
     def process_video(self,video_path):
         bag_file = video_path.split('/')[3]
@@ -223,7 +228,7 @@ class EnvModule():
             min_value = min(dists)
             min_index = dists.index(min_value)
             grasp_index = min_index + start
-            start = release_index
+
             ax.set_ylim(-0.3,0.7)
             ax.axvline(x=grasp_index)
             ax.annotate('grasp', xy=(grasp_index, 0.65), xytext=(grasp_index-20, 0.8), arrowprops=dict(arrowstyle='->'))
@@ -232,13 +237,16 @@ class EnvModule():
             print(f'grasp index {grasp_index}, release index {release_index}')
             # add grasp index and release index into the database, product positions table
             product_position_dao = ProductPositionDAO(self.db_path,self.id2label[i])
+            product_position_dao.update_reach_index(int(start),int(grasp_index))
             product_position_dao.update_grasp_index(int(grasp_index))
+            product_position_dao.update_move_index(int(grasp_index),int(release_index))
             product_position_dao.update_release_index(int(release_index))
             # ax.legend()
             plt.xlabel('timestamp')
             plt.ylabel('object position (m)')
             # plt.legend()
             # plt.show()
+            start = release_index
 
 
     def generate_data_for_object_detection(self):

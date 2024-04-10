@@ -20,8 +20,10 @@ CREATE TABLE IF NOT EXISTS Products (
     Color TEXT,
     TokenId INTEGER,
     SentenceId INTEGER,
+    ClassId INTEGER,
     FOREIGN KEY (SourceLocationId) REFERENCES SourceLocations(LocationId),
-    FOREIGN KEY (TargetLocationId) REFERENCES TargetLocations(LocationId)
+    FOREIGN KEY (TargetLocationId) REFERENCES TargetLocations(LocationId), 
+    FOREIGN KEY (ClassId) REFERENCES GroundedProducts(ClassId)
 );
 """
 
@@ -86,7 +88,7 @@ def create_tables(db_path):
     conn = create_connection(db_path)
     cursor = conn.cursor()
     # SQL create table statements here
-    cursor.execute(create_actions_table)
+    # cursor.execute(create_actions_table)
     cursor.execute(create_products_table)
     cursor.execute(create_source_locations_table)
     cursor.execute(create_target_locations_table)
@@ -111,7 +113,9 @@ def create_product_positions_table(db_path,ProductName):
         Rx REAL,
         Ry REAL,
         Rz REAL,
+        Reach INTEGER,
         Grasp INTEGER,
+        Move INTEGER,
         Release INTEGER,
         FOREIGN KEY (ProductId) REFERENCES Products(ObjectId),
         FOREIGN KEY (TaskModelId) REFERENCES TaskModels(TaskModelId),

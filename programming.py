@@ -15,7 +15,8 @@ class Programming():
         call the methods defined in language module
         """
         lm = LangugageModule(self.task_model_id, self.db_path)
-        lm.process_text(self.txt_input)
+        predict_path = '/home/ziyu/semantic_programming/data/processed/test.json'
+        lm.programming_process_text(self.txt_input,predict_path)
 
     def process_video(self):
         env = EnvModule(self.task_model_id, db_path)
@@ -55,9 +56,9 @@ if __name__ == "__main__":
     video_path = "./data/raw/20231220_134929.bag"
     task_model_id = 1
     programming = Programming(task_model_id,txt_path,video_path,db_path)
-    # programming.process_instruction()
+    programming.process_instruction()
     # programming.process_video()
-    programming.integrate_product_position_data()
+    # programming.integrate_product_position_data()
 
 
 
