@@ -48,3 +48,12 @@ def output_obb(path,images_path,width,height,class_labels):
         dfn = dataframes_name[i]
         df = dataframes[dfn]
         df.to_csv(file_name,index=False, date_format=float)
+
+
+def det_im(im):
+    # detect objects return dict = {class: [x,y,w,h,r]}
+    model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"runs/obb/train/weights/best.pt")
+    # running the model on realworld images
+    model = YOLO(model_path)
+    results = model.predict(source=im, stream=False, save=True, save_txt=False) # Display preds. Accepts all YOLO predict arguments
+    return results

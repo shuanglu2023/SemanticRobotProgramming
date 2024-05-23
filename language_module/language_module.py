@@ -219,8 +219,44 @@ class LangugageModule:
         
         return tokens, actions, colors, spatial_relations, move_relations
 
+    def get_product_by_id(self,product_id,products):
+        for product in products:
+            if product.object_id == product_id:
+                return product
+
     def get_task(self,input):
         print(f'input: {input}')
+        # save the input to txt file
+        # read the input and save to txt file
+        file_path = self.read_txt_from_path(input)
+        predict_path = os.path.join(self.processed_path,'test.json')
+        self.run_classifier(file_path,predict_path)
+        with open(predict_path) as f:
+            predict_json = json.load(f)
+        source_location_id = 0
+        target_location_id = 0
+        product_id = 0
+        for i in range(len(predict_json)):
+            sentence_id = i
+            x = predict_json[i]
+            tokens, actions, colors, spatial_relations, move_relations = self.read_classfication_results(x)
+            product_id, source_location_id, target_location_id, products, task_model, source_locations, target_locations = self.dep_parser(product_id, source_location_id, target_location_id, sentence_id, tokens, actions, colors, spatial_relations, move_relations)
+            for task in task_model:
+                target_object_id = task
+                for product in products:
+                    if product.object_id == target_object_id:
+                        print(f'{product.object_name} is the target object')
+                        if product.source_location_id is not None:
+                            source_location = source_locations[product.source_location_id]
+                            print(f'source location: {source_location.description} {self.get_product_by_id(source_location.object_id,products).color} {self.get_product_by_id(source_location.object_id,products).object_name}')
+                        else:
+                            print(f'source location is unknown')
+
+                        if product.target_location_id is not None:
+                            target_location = target_locations[product.target_location_id]
+                            print(f'target location: {target_location.description} {self.get_product_by_id(target_location.object_id,products).color} {self.get_product_by_id(target_location.object_id,products).object_name}')
+                        else:
+                            print(f'target location is unknown')
         
     def get_corref(self,input):
         return corref(input)

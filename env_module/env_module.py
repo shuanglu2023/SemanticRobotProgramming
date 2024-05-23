@@ -13,7 +13,7 @@ from env_module.utils import str2list, smooth_traj, vis_hand_traj
 from env_module.depth_estimation import depth_estimation
 import math
 import configparser
-from env_module.yolov8.predict import output_obb
+from env_module.yolov8.predict import output_obb, det_im
 from task_module.entityDAO import TaskModelDAO, ProductDAO, ProductPositionDAO, GroundedProductDAO, HandPositionDAO
 from env_module.segmentation import segmentation
 import matplotlib.pyplot as plt
@@ -250,6 +250,7 @@ class EnvModule():
 
 
     def generate_data_for_object_detection(self):
+        # generate synthetic data for object detection with blenderproc
         pass
 
     def train_classifier_for_object_detection(self):
@@ -310,6 +311,7 @@ class EnvModule():
         # print(f'size of bboxes {len(bboxes)}')
         start = 0
         end = len(bboxes)-1
+        counter = 0
         for i in range(len(bboxes)):
             bbox = bboxes[i]
             # print(f'bbox {bbox}')
@@ -324,25 +326,28 @@ class EnvModule():
                     start = i
                 x_center = math.floor(bbox[0] + (bbox[2] - bbox[0])/2)
                 y_center = math.floor(bbox[1] + (bbox[3] - bbox[1])/2)
-                print(f'hand center of x, y, camera z, estimated z {x_center} {y_center} {self.getDepthFromCamera(i,x_center,y_center)} {self.getDepthFromEstimation(i,x_center,y_center)}')
+                # print(f'hand center of x, y, camera z, estimated z {x_center} {y_center} {self.getDepthFromCamera(i,x_center,y_center)} {self.getDepthFromEstimation(i,x_center,y_center)}')
                 z = self.getDepthFromCamera(i,x_center,y_center)
                 if z == 0:
+                    counter = counter + 1
                     z = self.getDepthFromEstimation(i,x_center,y_center)
                 x = (x_center-self.ppx)/self.fx * z 
                 y = (y_center-self.ppy)/self.fy * z
             results.append([x,y,z])
         self.start = start
         self.end = end
+        print(f'number of missing depth values {counter} start {start} end {end} total length {len(bboxes)}')
         return results
 
-    def convert_obj_bbox_to_xyz(self,df):
+    def convert_obj_bbox_to_xyz(self,df,writer):
         xyzr = []
         for index, row in df.iterrows():
             # print(f'{index} {row}')
             x_center = math.floor(row['X']*self.width)
             y_center = math.floor(row['Y']*self.height)
             rot = row['R']
-            print(f'object center of x, y, camera z, estimated z {x_center} {y_center} {self.getDepthFromCamera(index,x_center,y_center)} {self.getDepthFromEstimation(index,x_center,y_center)}')
+            # print(f'object center of x, y, camera z, estimated z {x_center} {y_center} {self.getDepthFromCamera(index,x_center,y_center)} {self.getDepthFromEstimation(index,x_center,y_center)}')
+            writer.writerow([self.getDepthFromCamera(index,x_center,y_center),self.getDepthFromEstimation(index,x_center,y_center)])
             z = self.getDepthFromCamera(index,x_center,y_center)
             if z == 0:
                 z = self.getDepthFromEstimation(index,x_center,y_center)
@@ -368,17 +373,32 @@ class EnvModule():
             object_path = os.path.join(self.processed_path,'obb')
             obj = os.path.join(object_path,images_path) + "_" + self.class_labels[i] + ".csv"
             df = pd.read_csv(obj)
-            try:
-                df = df.fillna(method='ffill')
-                xyzr = self.convert_obj_bbox_to_xyz(df)
-            except:
-                df = df.fillna(method='bfill')
-                xyzr = self.convert_obj_bbox_to_xyz(df)
-            create_product_positions_table(self.db_path,self.class_labels[i])
-            # save data into database
-            product_position_dao = ProductPositionDAO(self.db_path,self.class_labels[i])
-            product_position_dao.add_product_positions(xyzr)
+            with open(self.parent_directory+f'/estimated_depth_{i}.csv','w',newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Z','EstimatedZ'])
+                try:
+                    df = df.fillna(method='ffill')
+                    xyzr = self.convert_obj_bbox_to_xyz(df,writer)
+                except:
+                    df = df.fillna(method='bfill')
+                    xyzr = self.convert_obj_bbox_to_xyz(df,writer)
+                create_product_positions_table(self.db_path,self.class_labels[i])
+                # save data into database
+                product_position_dao = ProductPositionDAO(self.db_path,self.class_labels[i])
+                product_position_dao.add_product_positions(xyzr)
 
-
+    @staticmethod
+    def capture_im():
+        pass
+    
+    @staticmethod
+    def det_obj(im):
+        results =det_im(im)
+        for result in results:
+            print(f'result {result.names}')
+            bbox = result.obb.xywhr.to("cpu").numpy()
+            confidence = result.obb.conf.to("cpu").numpy()
+            cls = result.obb.cls.to("cpu").numpy()
+            print(f'bbox {bbox} confidence {confidence} cls {cls}')
 
         

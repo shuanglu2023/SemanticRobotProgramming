@@ -57,7 +57,7 @@ if __name__ == "__main__":
     task_model_id = 1
     programming = Programming(task_model_id,txt_path,video_path,db_path)
     programming.process_instruction()
-    # programming.process_video()
+    programming.process_video()
     # programming.integrate_product_position_data()
 
 
