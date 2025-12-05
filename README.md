@@ -11,7 +11,7 @@ Key contributions include:
 - Validation in **ROS/Gazebo simulation**.
 
 ## 🚀 Usage
-- Use `programming.py` to **record the demonstration** through visual and motion capture inputs.  
+- Use `programming.py` to **record the demonstration** through visual and language inputs.  
 - Use `execution.py` to **validate the learned task** and execute it on the robot or in simulation.  
 - This repository is **under construction** — more details, examples, and documentation will follow.
 
